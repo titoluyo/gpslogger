@@ -186,6 +186,10 @@ dependencies {
 
     //Expandable textview in the FAQ
     compile 'com.ms-square:expandableTextView:0.1.4'
+
+    //OSMDroid
+    compile 'org.osmdroid:osmdroid-android:4.2'
+
 }
 
 tasks.whenTaskAdded { task ->
