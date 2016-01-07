@@ -145,6 +145,12 @@
 
         <provider android:name=".common.ContentApi" android:authorities="com.mendhak.gpslogger" android:exported="true" />
 
+        <service
+            android:name=".external.RemoteService"
+            android:exported="true"
+            >
+        </service>
+
     </application>
 
 </manifest>

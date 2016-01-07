@@ -26,18 +26,23 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.*;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.widget.Toast;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
+import com.google.gson.Gson;
 import com.mendhak.gpslogger.common.*;
 import com.mendhak.gpslogger.common.events.CommandEvents;
 import com.mendhak.gpslogger.common.events.ServiceEvents;
@@ -145,11 +150,13 @@ public class GpsLoggingService extends Service  {
     }
 
     private void RegisterEventBus() {
+        tracer.error("Activando EventBus");
         EventBus.getDefault().registerSticky(this);
     }
 
     private void UnregisterEventBus(){
         try {
+            tracer.error("Desactivando EventBus");
             EventBus.getDefault().unregister(this);
         } catch (Throwable t){
             //this may crash if registration did not go through. just be safe
@@ -811,6 +818,17 @@ public class GpsLoggingService extends Service  {
         }
 
         WriteToFile(loc);
+
+        tracer.debug("Guardando ubicacion en SharedPreferences***********");
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = settings.edit();
+        SerializableLocation ubicacion = new SerializableLocation(loc);
+        Gson gson = new Gson();
+        String data = gson.toJson(ubicacion);
+        editor.putString("ubicacion", data);
+        editor.apply();
+        Toast.makeText(this, "Ubicacion guardada", Toast.LENGTH_SHORT).show();
+
         ResetAutoSendTimersIfNecessary();
         StopManagerAndResetAlarm();
 
@@ -961,6 +979,7 @@ public class GpsLoggingService extends Service  {
 
     @EventBusHook
     public void onEvent(CommandEvents.RequestToggle requestToggle){
+        tracer.debug("Called CommandEvents.RequestToggle");
         if (Session.isStarted()) {
             StopLogging();
         } else {
